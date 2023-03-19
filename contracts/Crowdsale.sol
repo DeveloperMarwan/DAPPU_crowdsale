@@ -15,9 +15,9 @@ contract Crowdsale {
         token       =_token;
         price       = _price;
         maxTokens   = _maxTokens;
-        console.log("price: ", price);
-        console.log("maxTokens: ", maxTokens);
-        console.log("tokensSold: ", tokensSold);
+        // console.log("price: ", price);
+        // console.log("maxTokens: ", maxTokens);
+        // console.log("tokensSold: ", tokensSold);
     }
 
     function buyTokens(uint256 _amount) public payable {
@@ -25,8 +25,13 @@ contract Crowdsale {
         require(msg.value == (_amount / 1e18) * price);
         require(token.transfer(msg.sender, _amount));
         tokensSold += _amount;
-        console.log("tokensSold: ", tokensSold);
-        
+        // console.log("tokensSold: ", tokensSold);
+
         emit Buy(_amount, msg.sender);
+    }
+
+    receive() external payable {
+        uint256 tokenAmt = msg.value / price;
+        buyTokens(tokenAmt * 1e18);
     }
 }

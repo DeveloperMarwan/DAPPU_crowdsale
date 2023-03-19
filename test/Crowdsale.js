@@ -71,5 +71,26 @@ describe("Crowdsale", () => {
                 await expect(crowdsale.connect(user1).buyTokens(tokenAmt, {value: 0})).to.be.reverted;
             })
         })
-    })    
+    })
+
+    describe("Sending Ether", () => {
+        const ethAmt = ether(100);
+        const tokenAmt = tokens(100);
+        let txn, result;
+
+        describe("Success", () => {
+            beforeEach(async () => {
+                txn = await user1.sendTransaction({ to: crowdsale.address, value: ethAmt});
+                result = await txn.wait();
+            })
+
+            it("updates contract ether balance", async () => {
+                expect(await ethers.provider.getBalance(crowdsale.address)).to.equal(ethAmt);
+            })
+
+            it("Updates user token balance", async () => {
+                expect(await token.balanceOf(user1.address)).to.equal(tokenAmt);
+            })
+        })
+    })
 })
