@@ -7,21 +7,30 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const TOKEN_NAME = "Dapp University ICO"
+  const TOKEN_SYMBOL = "DAPPICO"
+  const MAX_TOKENS = "1000000";
+  const ICO_PRICE = hre.ethers.utils.parseEther("0.025");
 
-  const lockedAmount = hre.ethers.utils.parseEther("0.001");
-
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
-  await lock.deployed();
+  const Token = await hre.ethers.getContractFactory("Token");
+  const token = await Token.deploy(TOKEN_NAME, TOKEN_SYMBOL, MAX_TOKENS);
+  await token.deployed();
 
   console.log(
-    `Lock with ${ethers.utils.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
+    `Token deployed to ${token.address}`
   );
+
+  const Crowdsale = await hre.ethers.getContractFactory("Crowdsale");
+  const crowdsale = await Crowdsale.deploy(token.address, ICO_PRICE, hre.ethers.utils.parseEther(MAX_TOKENS));
+  await crowdsale.deployed();
+
+  console.log(
+    `Crowdsale deployed to ${crowdsale.address}`
+  );
+
+  const txn = await token.transfer(crowdsale.address, hre.ethers.utils.parseEther(MAX_TOKENS));
+  await txn.wait();
+  console.log("Tokens transferred to Crowdsale contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
